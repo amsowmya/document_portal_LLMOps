@@ -27,7 +27,7 @@ class CustomLogger:
         
         logging.basicConfig(
             level=logging.INFO,
-            format="%(message)s",
+            format="%(message)s",  # Structlog will handle JSON rendering
             handlers=[console_handler, file_handler]
         )
         
@@ -51,6 +51,8 @@ if __name__ == "__main__":
     logger = CustomLogger()
     logger = logger.get_logger(__file__)
     logger.info("Custom logger is initialized", user_id=123, filename="report.json")
+    logger.error("Custom logger is initialized", user_id=123, filename="report.json")
+    
     
 
 
