@@ -79,7 +79,7 @@ class DocumentIngestion:
             self.log.error(f"Error reading PDF: {e}") 
             raise DocumentPortalException("An error occurred while reading the PDF.", sys)
         
-    def combine_document(self) -> str:
+    def combine_documents(self) -> str:
         try:
             content_dict = {}
             doc_parts = []
