@@ -30,4 +30,7 @@ document_comparison_prompt = ChatPromptTemplate.from_template("""
     {format_instructions}
     """)
 
-PROMPT_REGISTRY = {"document_analysis": document_analysis_prompt, "document_comparison": document_comparison_prompt}
+PROMPT_REGISTRY = {
+    "document_analysis": document_analysis_prompt, 
+    "document_comparison": document_comparison_prompt
+}

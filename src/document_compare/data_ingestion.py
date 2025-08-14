@@ -1,15 +1,25 @@
 import sys 
+import os
 import fitz
+import uuid
 from pathlib import Path
+from datetime import datetime
 from logger.custom_logger import CustomLogger
 from exception.custom_exception import DocumentPortalException
 
 
 class DocumentIngestion:
-    def __init__(self, base_dir: str = "data\document_compare"):
+    def __init__(self, base_dir: str = "data\document_compare", session_id=None):
         self.log = CustomLogger().get_logger(__name__) 
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.session_id = session_id or f"session_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        
+        self.session_path = os.path.join(self.base_dir, self.session_id)
+        os.makedirs(self.session_path, exist_ok=True)
+        
+        self.log.info("Document Ingestion initialized", session_id=self.session_id, session_path=self.session_path)
     
     def delete_existing_files(self):
         """ 
@@ -47,7 +57,7 @@ class DocumentIngestion:
             with open(act_path, "wb") as f:
                 f.write(actual_file.getbuffer())
                 
-            self.log.info("Files saved", reference=str(ref_path), actual=str(act_path))
+            self.log.info("Files saved", reference=str(ref_path), actual=str(act_path), session=self.session_id)
             return ref_path, act_path
             
         except Exception as e:
@@ -98,3 +108,20 @@ class DocumentIngestion:
         except Exception as e:
             self.log.error(f"Error combining documents: {e}") 
             raise DocumentPortalException("An error occurred while reading the PDF.", sys)
+        
+    def clean_old_sessions(self, keep_latest: int=3):
+        """ 
+        Optional method to delete older session folders, keeping only the latest N.
+        """
+        try:
+            session_folders = sorted(
+                [f for f in self.base_dir.iterdir() if f.is_dir()]
+            ) 
+            for folder in session_folders[keep_latest:]:
+                for file in folder.iterdir():
+                    file.unlink()
+                folder.rmdir()
+                self.log.info("Old session folder deleted", path=str(folder))
+        except Exception as e:
+            self.log.error("Error cleaning old sessions", error=str(e))
+            raise DocumentPortalException("Error cleaning old session", sys)
