@@ -12,9 +12,9 @@ import uuid
 
 class DocumentIngestor:
     SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.txt', '.md']
-    def __init__(self, temp_dir: str = "data\multi_document_chat", faiss_dir: str = "faiss_index", session_id: str = None):
+    def __init__(self, temp_dir: str = "data\\multi_document_chat", faiss_dir: str = "faiss_index", session_id: str = None):
         try:
-            self.log = CustomLogger.get_logger(__name__) 
+            self.log = CustomLogger().get_logger(__name__) 
             
             # base dirs
             self.temp_dir = Path(temp_dir)
