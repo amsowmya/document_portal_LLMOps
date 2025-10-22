@@ -13,5 +13,7 @@ streamlit
 langchain-core[tracing]
 pytest
 pandas
+fastapi
+uvicorn
 
 -e .

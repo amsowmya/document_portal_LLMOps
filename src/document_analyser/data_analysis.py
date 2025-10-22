@@ -32,7 +32,7 @@ class DocumentAnalyzer:
             self.log.error(f"Error initializing DocumentAnalyzer: {e}")
             raise DocumentPortalException("Error in DocuemntAnalyzer initialization", sys)
     
-    def analyze_metadata(self, document_text):
+    def analyze_document(self, document_text):
         """
         Analyze a document's text and extract structured metadata & summary
         """ 
