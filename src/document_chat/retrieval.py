@@ -19,11 +19,11 @@ from model.models import PromptType
 
 
 class ConversationalRAG:
-    def __init__(self, session_id: str, retriever=None):
+    def __init__(self, session_id: Optional[str], retriever=None):
         try:
             self.log = CustomLogger().get_logger(__name__)
-            self.llm = self._load_llm()
             self.session_id = session_id
+            self.llm = self._load_llm()
             self.contextualize_prompt: ChatPromptTemplate = PROMPT_REGISTRY[PromptType.CONTEXTUALIZE_QUESTION.value]
             self.qa_prompt: ChatPromptTemplate = PROMPT_REGISTRY[PromptType.CONTEXT_QA.value]
             

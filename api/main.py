@@ -21,7 +21,7 @@ UPLOAD_BASE = os.getenv("UPLOAD_BASE", "data")
 
 app = FastAPI(title="Document Portal API", version="0.1")
 
-# BASE_DIR = Path(__file__).resolve().parent.parent #Project root
+BASE_DIR = Path(__file__).resolve().parent.parent #Project root
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,8 +32,10 @@ app.add_middleware(
 )
 
 # serve static and template
-app.mount("/static", StaticFiles(directory="../static"), name="static")
-templates = Jinja2Templates(directory="../templates")
+# app.mount("/static", StaticFiles(directory="../static"), name="static")
+app.mount("/static", StaticFiles(directory=f"{BASE_DIR}/static"), name="static")
+
+templates = Jinja2Templates(directory=f"{BASE_DIR}/templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_ui(request: Request):

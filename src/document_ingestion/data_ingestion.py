@@ -18,8 +18,8 @@ from utils.model_loader import ModelLoader
 from logger.custom_logger import CustomLogger
 from exception.custom_exception import DocumentPortalException
 
-from utils.file_io import _session_id, save_uploaded_file
-from utils.document_ops import load_documents, concat_for_analysis, concat_for_comparision
+from utils.file_io import generate_session_id, save_uploaded_files
+from utils.document_ops import load_documents, concat_for_analysis, concat_for_comparison
 
 SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
@@ -106,7 +106,7 @@ class ChatIngestor:
             self.model_loader = ModelLoader()
 
             self.use_session = use_session_dirs
-            self.session_id = session_id or _session_id()
+            self.session_id = session_id or generate_session_id()
 
             self.temp_base = Path(temp_base); self.temp_base.mkdir(parents=True, exist_ok=True)
             self.faiss_base = Path(faiss_base); self.faiss_base.mkdir(parents=True, exist_ok=True)
@@ -145,7 +145,7 @@ class ChatIngestor:
                         k: int = 5,
                         ):
         try:
-            paths = save_uploaded_file(uploaded_files, self.temp_dir) 
+            paths = save_uploaded_files(uploaded_files, self.temp_dir) 
             docs = load_documents(paths)
             if not docs:
                 raise ValueError("No valid documents loaded")
@@ -180,7 +180,7 @@ class DocHandler:
     def __init__(self, data_dir: Optional[str] = None, session_id: Optional[str] = None):
         self.log = CustomLogger().get_logger(__name__)
         self.data_dir = data_dir or os.getenv("DATA_STORAGE_PATH", os.path.join(os.getcwd(), "data", "document_analysis"))
-        self.session_id = session_id or self._session_id("session")
+        self.session_id = session_id or generate_session_id("session")
         self.session_path = os.path.join(self.data_dir, self.session_id)
         os.makedirs(self.session_path, exist_ok=True)
         self.log.info("DocHandler initialized", session_id=self.session_id, session_path=self.session_path)
@@ -188,21 +188,20 @@ class DocHandler:
 
     def save_pdf(self, uploaded_file) -> str:
         try:
-            filename = os.path.basename(uploaded_file)
-            if not filename.lower().endswith('.pdf'):
-                raise ValueError("Invalid file type. Only PDF's are allowed")
+            filename = os.path.basename(uploaded_file.name)
+            if not filename.lower().endswith(".pdf"):
+                raise ValueError("Invalid file type. Only PDFs are allowed.")
             save_path = os.path.join(self.session_path, filename)
-            with open(save_path, 'wb') as f:
+            with open(save_path, "wb") as f:
                 if hasattr(uploaded_file, "read"):
                     f.write(uploaded_file.read())
                 else:
                     f.write(uploaded_file.getbuffer())
-
             self.log.info("PDF saved successfully", file=filename, save_path=save_path, session_id=self.session_id)
             return save_path
         except Exception as e:
-            self.log.error("Fail to save PDF", error=str(e), session_id=self.session_id)
-            raise DocumentPortalException(f"Failed to save PDF: {str(e)}", e)
+            self.log.error("Failed to save PDF", error=str(e), session_id=self.session_id)
+            raise DocumentPortalException(f"Failed to save PDF: {str(e)}", e) from e
 
     def read_pdf(self, pdf_path: str) -> str:
         try:
@@ -227,7 +226,7 @@ class DocumentComparator:
     def __init__(self, base_dir: str = "data/document_compare", session_id: Optional[str]=None):
         self.log = CustomLogger().get_logger(__name__)
         self.base_dir = Path(base_dir)
-        self.session_id = session_id or _session_id() 
+        self.session_id = session_id or generate_session_id() 
         self.session_path = self.base_dir / self.session_id
         self.session_path.mkdir(parents=True, exist_ok=True)
         self.log.info("Document Comparator initialized", session_path=str(self.session_path))
@@ -237,7 +236,7 @@ class DocumentComparator:
             ref_path = self.session_path / reference_file.name
             act_path = self.session_path / actual_file.name
             for fobj, out in ((reference_file, ref_path), (actual_file, act_path)):
-                if fobj.lower().endswith(".pdf"):
+                if not fobj.name.lower().endswith(".pdf"):
                     raise ValueError("Only PDF files are allowed")
                 with open(out, 'wb') as f:
                     if hasattr(fobj, 'read'):
@@ -262,8 +261,8 @@ class DocumentComparator:
                     if text.strip():
                         parts.append(f"\n--- Page {page_num + 1} ---\n{text}")
 
-            self.log.info("PDF read successfull", pdf_path=pdf_path, session_id=self.session_id, pages=len(text_chunks))
-            return "\n".join(text)
+            self.log.info("PDF read successfull", pdf_path=pdf_path, session_id=self.session_id, pages=len(parts))
+            return "\n".join(parts)
         except Exception as e:
             self.log.error("Fail to read PDF", error=str(e), session_id=self.session_id)
             raise DocumentPortalException(f"Failed to read PDF: {str(e)}", e)

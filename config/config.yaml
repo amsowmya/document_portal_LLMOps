@@ -2,8 +2,13 @@ faiss_db:
   collection_name: "document_portal"
 
 embedding_model:
-  provider: "google"
-  model_name: "models/embedding-001"
+  google:
+    provider: "google"
+    model_name: "models/embedding-001"
+
+  hf:
+    provider: "huggingface"
+    model_name: "sentence-transformers/all-MiniLM-L6-v2"
 
 retriever:
   top_k: 10
@@ -11,7 +16,7 @@ retriever:
 llm:
   groq:
     provider: "groq"
-    model_name: "deepseek-r1-distill-llama-70b"
+    model_name: "llama-3.3-70b-versatile"
     temperature: 0
     max_output_tokens: 2048
 
