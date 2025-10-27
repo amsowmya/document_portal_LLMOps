@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 from typing import Iterable, List
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 from langchain.schema import Document
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader
 from logger import GLOBAL_LOGGER as log
@@ -44,7 +44,7 @@ def concat_for_comparison(ref_docs: List[Document], act_docs: List[Document]) ->
     return f"<<REFERENCE_DOCUMENTS>>\n{left}\n\n<<ACTUAL_DOCUMENTS>>\n{right}"
 
 # ---------- Helpers ----------
-class FastAPIFileAdapter:
+class FastAPIFileAdaptor:
     """Adapt FastAPI UploadFile -> .name + .getbuffer() API"""
     def __init__(self, uf: UploadFile):
         self._uf = uf
