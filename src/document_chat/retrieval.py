@@ -49,6 +49,7 @@ class ConversationalRAG:
             log.error("Failed to initialize ConversationalRAG", error=str(e))
             raise DocumentPortalException("Initialization error in ConversationalRAG", sys)
 
+
     # ---------- Public API ----------
 
     def load_retriever_from_faiss(

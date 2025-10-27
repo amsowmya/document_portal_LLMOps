@@ -9,6 +9,7 @@ faiss-index/
 .DS_Store
 data/
 
+
 # C extensions
 *.so
 
